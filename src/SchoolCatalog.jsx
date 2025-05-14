@@ -1,21 +1,39 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 export default function SchoolCatalog() {
-  const [courses, setCourses] = useState([]);
+  const [courseData, setCourseData] = useState([]);
+  const [filterText, setFilterText] = useState('');
+  const [sortColumn, setSortColumn] = useState('Trimester');
+  const [sortAsc, setSortAsc] = useState(true);
 
   useEffect(() => {
     fetch('/api/courses.json')
       .then((response) => response.json())
       .then((data) => {
-        console.log('Fetched data: ', data);
-        setCourses(data);
+        setCourseData(data);
       });
   }, []);
+
+
+  const coursesProcessed = useMemo(() => {
+    const coursesFiltered = courses.filter((course) => {
+      return course.courseNumber.startsWith(filterText) ||
+        course.courseName.startsWith(filterText);
+    });
+
+    const coursesSorted = coursesFiltered.sort(a, b) {
+
+    }
+  });
 
   return (
     <div className="school-catalog">
       <h1>School Catalog</h1>
-      <input type="text" placeholder="Search" />
+      <input
+        type="text"
+        placeholder="Search"
+        onChange={(e) => setFilterText(e.target.value)}
+      />
       <table>
         <thead>
           <tr>
@@ -28,8 +46,8 @@ export default function SchoolCatalog() {
           </tr>
         </thead>
         <tbody>
-          {courses.map((course) => (
-            <tr>
+          {coursesFiltered.map((course) => (
+            <tr key={course.courseNumber}>
               <td>{course.trimester}</td>
               <td>{course.courseNumber}</td>
               <td>{course.courseName}</td>
