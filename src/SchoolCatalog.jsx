@@ -1,11 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
 
 export default function SchoolCatalog() {
+  // USESTATE
   const [coursesData, setCoursesData] = useState([]);
   const [filterText, setFilterText] = useState('');
   const [sortField, setSortField] = useState('trimester');
   const [sortAsc, setSortAsc] = useState(true);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 5;
 
+  // USEEFFECT
   useEffect(() => {
     fetch('/api/courses.json')
       .then((response) => response.json())
@@ -14,12 +18,12 @@ export default function SchoolCatalog() {
       });
   }, []);
 
+  // HELPER FUNCTIONS
   const handleSort = (field) => {
     setSortField(field);
     // sortAsc set to false if same sort re-triggered, otherwise true
     setSortAsc((sortField === field && sortAsc) ? false : true);
   }
-
 
   const coursesProcessed = useMemo(() => {
     const coursesFiltered = coursesData.filter((course) => {
@@ -45,8 +49,15 @@ export default function SchoolCatalog() {
     });
 
     return coursesSorted;
-    // only re-compute if these change (useMemo)
+    // only re-compute if the below change (useMemo)
   }, [coursesData, filterText, sortField, sortAsc]);
+
+  // VARIABLES
+  const currentPage = coursesProcessed.slice(
+    ((page - 1) * PAGE_SIZE), (page * PAGE_SIZE)
+  );
+  const hasMore = page * PAGE_SIZE < coursesProcessed.length;
+  const hasLess = page > 1;
 
   return (
     <div className="school-catalog">
@@ -56,19 +67,19 @@ export default function SchoolCatalog() {
         placeholder="Search"
         onChange={(e) => setFilterText(e.target.value)}
       />
-      <table>
+      <table className="catalog">
         <thead>
           <tr>
-            <th onClick={() => handleSort('trimester')}>Trimester</th>
-            <th onClick={() => handleSort('courseNumber')}>Course Number</th>
-            <th onClick={() => handleSort('courseName')}>Courses Name</th>
-            <th onClick={() => handleSort('semesterCredits')}>Semester Credits</th>
-            <th onClick={() => handleSort('totalClockHours')}>Total Clock Hours</th>
+            <th className="" onClick={() => handleSort('trimester')}>Trimester</th>
+            <th className="" onClick={() => handleSort('courseNumber')}>Course Number</th>
+            <th className="" onClick={() => handleSort('courseName')}>Courses Name</th>
+            <th className="" onClick={() => handleSort('semesterCredits')}>Semester Credits</th>
+            <th className="" onClick={() => handleSort('totalClockHours')}>Total Clock Hours</th>
             <th>Enroll</th>
           </tr>
         </thead>
         <tbody>
-          {coursesProcessed.map((course) => (
+          {currentPage.map((course) => (
             <tr key={course.courseNumber}>
               <td>{course.trimester}</td>
               <td>{course.courseNumber}</td>
@@ -83,8 +94,8 @@ export default function SchoolCatalog() {
         </tbody>
       </table>
       <div className="pagination">
-        <button>Previous</button>
-        <button>Next</button>
+        <button disabled={!hasLess} onClick={() => setPage(page - 1)}>Previous</button>
+        <button disabled={!hasMore} onClick={() => setPage(page + 1)}>Next</button>
       </div>
     </div>
   );
