@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useContext } from 'react';
+import { EnrolledContext } from "./App";
 
 export default function SchoolCatalog() {
   // USESTATE
@@ -19,12 +20,14 @@ export default function SchoolCatalog() {
   }, []);
 
   // HELPER FUNCTIONS
+  // SORT
   const handleSort = (field) => {
     setSortField(field);
     // sortAsc set to false if same sort re-triggered, otherwise true
     setSortAsc((sortField === field && sortAsc) ? false : true);
   }
 
+  // FILTER AND SORT
   const coursesProcessed = useMemo(() => {
     const coursesFiltered = coursesData.filter((course) => {
       return course.courseNumber.startsWith(filterText) ||
@@ -51,6 +54,12 @@ export default function SchoolCatalog() {
     return coursesSorted;
     // only re-compute if the below change (useMemo)
   }, [coursesData, filterText, sortField, sortAsc]);
+
+  // ENROLL
+  const { enrolledCourses, setEnrolledCourses } = useContext(EnrolledContext);
+  const enrollInCourse = (course) => {
+    setEnrolledCourses([...enrolledCourses, course]);
+  }
 
   // VARIABLES
   const currentPage = coursesProcessed.slice(
@@ -87,7 +96,7 @@ export default function SchoolCatalog() {
               <td>{course.semesterCredits}</td>
               <td>{course.totalClockHours}</td>
               <td>
-                <button>Enroll</button>
+                <button onClick={() => enrollInCourse(course)}>Enroll</button>
               </td>
             </tr>
           ))}
