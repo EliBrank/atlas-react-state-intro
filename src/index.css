@@ -80,6 +80,10 @@ table {
   border: 1px solid black;
 }
 
+table th:hover {
+  cursor: pointer;
+}
+
 table th,
 table td {
   padding: 0.5em;
